@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon</title>
+    <!-- CSS only -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous"> -->
+    <!-- JavaScript Bundle with Popper -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script> -->
+    <style>
+        body {
+            margin: 0;
+        }
+        .videoContainer {
+            display: flex;
+            justify-content: space-around;
+        }
+        .videoContainer video{
+            width: 40%;
+            border: 1px solid black;
+        }
+        .videoContainer canvas{
+            width: 40%;
+            height: 90%;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div class="videoContainer">
+        <video id="videoElement" controls></video>
+        <!-- <video autoplay="true" id="sourceElement"></video> -->
+        <canvas id="sourceElement"></canvas>
+    </div>
+    <div>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+    </div>
+    <script>
+        const videoElement = document.getElementById("videoElement");
+        const startButton = document.getElementById("start");
+        const stopButton = document.getElementById("stop");
+        let stream = null;
+        async function getMedia(constraints) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // console.log(stream);
+                videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = function(e) {
+                    videoElement.play();
+                    // console.log(e);
+                };
+                // const can = new canvas();
+                // can.seek();  
+                // videoElement.addEventListener('')
+
+
+            /* use the stream */
+            } catch(err) {
+                /* handle the error */
+                console.log(err)
+            }
+        }
+        
+        function stop(){
+            stream.getTracks().forEach(function(track) {
+                track.stop();
+            });
+        }
+
+        startButton.addEventListener('click', () => {
+            getMedia({ audio: false, video: { frameRate: 4 } });
+        })
+        stopButton.addEventListener('click', stop);
+
+
+        class canvas {
+            constructor(){
+                this.video = document.getElementById('videoElement');
+                this.source = document.getElementById('sourceElement');
+                this.ctx = this.source.getContext("2d");
+            }
+
+            seek = () => {
+                // this.video.addEventListener('seeked', (e) => {
+                //     console.log("hey");
+                //     console.log(e);
+                // })
+
+                this.time = setInterval(() => {
+                    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+                    let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
+                }, 250);
+            }
+        }
+    </script>
+</body>
+</html>
