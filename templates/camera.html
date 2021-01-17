@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackathon</title>
-    <!-- CSS only -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous"> -->
-    <!-- JavaScript Bundle with Popper -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script> -->
     <style>
         body {
             margin: 0;
@@ -31,13 +27,16 @@
     <div class="videoContainer">
         <video id="videoElement" controls></video>
         <!-- <video autoplay="true" id="sourceElement"></video> -->
-        <canvas id="sourceElement"></canvas>
+        <!-- <canvas id="sourceElement"></canvas> -->
     </div>
-    <div>
+    <!-- <div>
         <button id="start">Start</button>
         <button id="stop">Stop</button>
+    </div> -->
+    <div class = 'video'>
+        <img id="image">
     </div>
-    <script>
+    <!-- <script>
         const videoElement = document.getElementById("videoElement");
         const startButton = document.getElementById("start");
         const stopButton = document.getElementById("stop");
@@ -94,6 +93,84 @@
                 }, 250);
             }
         }
+    </script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        socket.on('connect', function(){
+            console.log("Connected...!", socket.connected)
+        });
+
+        const video = document.querySelector("#videoElement");
+
+        video.width = 500; 
+        video.height = 375;
+
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function (err0r) {
+                console.log(err0r)
+                console.log("Something went wrong!");
+            });
+        }
+
+    //     let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    // let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+    // let cap = new cv.VideoCapture(video);
+
+    const FPS = 4;
+    
+    function capture(video, scaleFactor) {
+    if(scaleFactor == null){
+        scaleFactor = 1;
+    }
+    var w = video.videoWidth * scaleFactor;
+    var h = video.videoHeight * scaleFactor;
+    var canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h);
+    return canvas;
+} 
+
+    setInterval(() => {
+        // cap.read(src);
+
+        var type = "image/jpg"
+        // var data = document.getElementById("canvasOutput").toDataURL(type);
+        // data = data.replace('data:' + type + ';base64,', ''); 
+        var video_element = document.getElementById("videoElement")
+        var frame = capture(video_element, 1)
+        // console.log(frame);
+        var data = frame.toDataURL(type);
+        console.log(data);
+        socket.emit('image', data);
+    }, 10000/FPS);
+
+    function _arrayBufferToBase64( buffer ) {
+        var binary = '';
+        var bytes = new Uint8Array( buffer );
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode( bytes[ i ] );
+        }
+        return window.btoa( binary );
+    }
+
+    socket.on('response_back', function(image){
+        console.log('hey')
+        const image_id = document.getElementById('image');
+        image_id.setAttribute('src', "data:image/jpg;base64," + _arrayBufferToBase64(image));
+        console.log(image_id)
+        // console.log(arrayBufferToBase64(image))
+    });
+
     </script>
 </body>
-</html>
+</html> 
